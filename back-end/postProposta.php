@@ -1,20 +1,29 @@
 <?php
-    $data = [
-        [
-            "registro" => "reg1",
-            "nome" => "Bitix Customer Plano 1",
-            "codigo" => 1
-        ],
-    ];
+    header('Content-Type: application/json');
 
-    // Convertendo o array em uma string JSON
-    $jsonString = json_encode($data, JSON_PRETTY_PRINT);
+    require_once 'models/proposta.php';
 
-    $filename= 'dados.json';
+    $data = new postProposta(__DIR__ .  '/data/proposta.json');
 
-    if (file_put_contents($filename, $jsonString) !== false) {
-        echo "Arquivo JSON criado com sucesso!";
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        
+        $jsonData = $data -> getAllData();
+        
+        echo json_encode($jsonData);
+
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        
+        $postData = json_decode(file_get_contents('php://input'), true);
+
+        if ($data -> addData($postData)) {
+            http_response_code(201);
+            echo json_encode(['message' => 'Dados adicionados com sucesso.']);
+        } else {
+            http_response_code(500);
+            echo json_encode(['message' => 'Erro ao adicionar dados.']);
+        }
     } else {
-        echo "Erro ao criar arquivo JSON";
+        http_response_code(405);
+        echo json_encode(['message' => 'Método não permitido.']);
     }
 ?>
